@@ -20,39 +20,39 @@ app.use(express.json());
 db.sequelize.sync();
 app.use("/api/v1", router);
 
-// if (cluster.isMaster) {
-//     for (var i = 0; i < cCPUs; i++) {
-//         cluster.fork();
-//     }
+if (cluster.isMaster) {
+    for (var i = 0; i < cCPUs; i++) {
+        cluster.fork();
+    }
 
-//     cluster.on('online', function (worker) {
-//         console.log('Worker ' + worker.process.pid + ' is online.');
-//     });
-//     cluster.on('exit', function (worker, code, signal) {
-//         console.log('worker ' + worker.process.pid + ' died.');
-//     });
-// }
-// else {
-
-// Routing
-app.use(async (req, res, next) => {
-    next(createError(404, "Not Found"));
-});
-
-app.use((err, req, res, next) => {
-    res.status(err.status || 500);
-    res.send({
-        status: false,
-        error: {
-            status: err.status || 500,
-            message:
-                process.env.MODE === "development" ? err.message : "Error Occoured",
-        },
+    cluster.on('online', function (worker) {
+        console.log('Worker ' + worker.process.pid + ' is online.');
     });
-});
+    cluster.on('exit', function (worker, code, signal) {
+        console.log('worker ' + worker.process.pid + ' died.');
+    });
+}
+else {
 
-// Listen
-app.listen(port, () => {
-    console.log(`Server is listening on PORT No. ${port}`);
-});
-// }
+    // Routing
+    app.use(async (req, res, next) => {
+        next(createError(404, "Not Found"));
+    });
+
+    app.use((err, req, res, next) => {
+        res.status(err.status || 500);
+        res.send({
+            status: false,
+            error: {
+                status: err.status || 500,
+                message:
+                    process.env.MODE === "development" ? err.message : "Error Occoured",
+            },
+        });
+    });
+
+    // Listen
+    app.listen(port, () => {
+        console.log(`Server is listening on PORT No. ${port}`);
+    });
+}
